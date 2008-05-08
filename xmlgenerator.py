@@ -21,13 +21,14 @@ Usage:
 u'<root><blog author="Nuno Mariz" title="Nuno Mariz Weblog">http://mariz.org</blog></root>'
 
 >>> xml = Xml(root)
->>> xml.xml
+>>> xml.render()
 u'<?xml version="1.0" encoding="utf-8"?>\n
 <root><blog author="Nuno Mariz" title="Nuno Mariz Weblog">http://mariz.org</blog></root>'
 
 >>> import cStringIO
 >>> stream = cStringIO.StringIO()
->>> xml = Xml(root, stream)
+>>> xml = Xml(root)
+>>> xml.render(stream)
 >>> print repr(stream.getvalue())
 '<?xml version="1.0" encoding="utf-8"?>\n
 <root><blog author="Nuno Mariz" title="Nuno Mariz Weblog">http://mariz.org</blog></root>'
@@ -45,11 +46,14 @@ class Xml(object):
     XML Generator class
     """
 
-    def __init__(self, node, writer=None):
-        self.writer = writer
-        self.xml = u'<?xml version="1.0" encoding="%s"?>\n%s' % (ENCODING, node.render())
-        if self.writer:
-            self.writer.write(self.xml)
+    def __init__(self, node):
+        self.node = node
+
+    def render(self, writer=None):
+        if writer:
+            writer.write(u'<?xml version="1.0" encoding="%s"?>\n%s' % (ENCODING, self.node.render()))
+        else:
+            return u'<?xml version="1.0" encoding="%s"?>\n%s' % (ENCODING, self.node.render())
 
 class Node(object):
     """

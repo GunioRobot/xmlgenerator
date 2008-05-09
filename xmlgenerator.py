@@ -10,7 +10,7 @@ Usage:
 
 >>> # Node creation
 >>> root = Node('root')
->>> records = Node('blog', 'http://mariz.org', author='Nuno Mariz', title='Nuno Mariz Weblog')
+>>> records = Node('blog', 'http://mariz.org', dict(author='Nuno Mariz', title='Nuno Mariz Weblog'))
 
 >>> # Append node
 >>> root.append(records)
@@ -26,12 +26,14 @@ u'<?xml version="1.0" encoding="utf-8"?>\n
 <root><blog author="Nuno Mariz" title="Nuno Mariz Weblog">http://mariz.org</blog></root>'
 
 >>> import cStringIO
->>> stream = cStringIO.StringIO()
+>>> output = cStringIO.StringIO()
 >>> xml = Xml(root)
->>> xml.render(stream)
->>> print repr(stream.getvalue())
-'<?xml version="1.0" encoding="utf-8"?>\n
-<root><blog author="Nuno Mariz" title="Nuno Mariz Weblog">http://mariz.org</blog></root>'
+>>> xml.render(output)
+>>> print output.getvalue()
+<?xml version="1.0" encoding="utf-8"?>
+<root><blog author="Nuno Mariz" title="Nuno Mariz Weblog">http://mariz.org</blog></root>
+
+>>> output.close()
 """
     
 from xml.sax.saxutils import escape
@@ -49,25 +51,34 @@ class Xml(object):
     def __init__(self, node):
         self.node = node
 
+    def __repr__(self):
+        return '<Xml: "Node: %s">' % str(self.node)
+
+    def __unicode__(self):
+        return u'<?xml version="1.0" encoding="%s"?>\n%s' % (ENCODING, self.node.render())
+    
     def render(self, writer=None):
-        if writer:
-            writer.write(u'<?xml version="1.0" encoding="%s"?>\n%s' % (ENCODING, self.node.render()))
-        else:
-            return u'<?xml version="1.0" encoding="%s"?>\n%s' % (ENCODING, self.node.render())
+        if writer is None:
+            return unicode(self)
+        writer.write(unicode(self))
+        
 
 class Node(object):
     """
     Node Element
     """
 
-    def __init__(self, n, c=None, **kwargs):
-        self.name = n
-        self.contents = self.escape(c)
-        self.attributes = kwargs
+    def __init__(self, name, contents=None, attributes=dict()):
+        self.name = name
+        self.contents = self.escape(contents)
+        self.attributes = attributes
         self.nodes = []
 
     def __repr__(self):
         return '<Node: "%s">' % self.name
+
+    def __str__(self):
+        return self.name
 
     def __unicode__(self):
         attributes = u''.join([' %s="%s"' % (key, self.escape(value)) for key, value in self.attributes.items()])
@@ -85,7 +96,7 @@ class Node(object):
         self.nodes.append(node)
 
     def render(self):
-        return self.__unicode__()
+        return unicode(self)
 
     def escape(self, value):
         if isinstance(value, (NoneType, bool, int, long, datetime, date, time, float, Decimal)):

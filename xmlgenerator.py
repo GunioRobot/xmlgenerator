@@ -34,12 +34,17 @@ u'<?xml version="1.0" encoding="utf-8"?>\n
 <root><blog author="Nuno Mariz" title="Nuno Mariz Weblog">http://mariz.org</blog></root>
 
 >>> output.close()
+
+>>> # Writing contents to a file
+>>> xml = Xml(root)
+>>> xml.write('blogs.xml')
 """
     
 from xml.sax.saxutils import escape
 from types import NoneType
 from decimal import Decimal
 from datetime import datetime, date, time
+import codecs
 
 ENCODING = 'utf-8'
 
@@ -61,17 +66,23 @@ class Xml(object):
         if writer is None:
             return unicode(self)
         writer.write(unicode(self))
-        
+
+    def write(self, filename):
+        writer = codecs.open(filename, 'w', ENCODING)
+        self.render(writer)
+        writer.close()
+
 
 class Node(object):
     """
     Node Element
     """
 
-    def __init__(self, name, contents=None, attributes=dict()):
+    def __init__(self, name, contents=None, attributes=dict(), cdata=False):
         self.name = name
-        self.contents = self.escape(contents)
+        self.contents = contents
         self.attributes = attributes
+        self.cdata = cdata
         self.nodes = []
 
     def __repr__(self):
@@ -82,13 +93,13 @@ class Node(object):
 
     def __unicode__(self):
         attributes = u''.join([' %s="%s"' % (key, self.escape(value)) for key, value in self.attributes.items()])
-        content = None
+        contents = None
         if self.contents:
-            content = self.contents
+            contents = self.escape(self.contents, self.cdata)
         elif self.nodes:
-            content = u''.join([unicode(node) for node in self.nodes])
-        if content:
-            return u'<%s%s>%s</%s>' % (self.name, attributes, content, self.name)
+            contents = u''.join([unicode(node) for node in self.nodes])
+        if contents:
+            return u'<%s%s>%s</%s>' % (self.name, attributes, contents, self.name)
         return u'<%s%s />' % (self.name, attributes)
 
     def append(self, node):
@@ -98,10 +109,15 @@ class Node(object):
     def render(self):
         return unicode(self)
 
-    def escape(self, value):
-        if isinstance(value, (NoneType, bool, int, long, datetime, date, time, float, Decimal)):
+    def escape(self, value, cdata=False):
+        if isinstance(value, NoneType):
+            return u''
+        if isinstance(value, (bool, int, long, datetime, date, time, float, Decimal)):
             return value
-        value = escape(value)
+        if cdata:
+            value = u'<![CDATA[%s]]>' % value
+        else:
+            value = escape(value)
         if isinstance(value, basestring):
             if not isinstance(value, unicode):
                 value = unicode(value, ENCODING)

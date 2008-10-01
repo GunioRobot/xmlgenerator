@@ -54,13 +54,13 @@ class Xml(object):
     """
 
     def __init__(self, node):
-        self.node = node
+        self._node = node
 
     def __repr__(self):
-        return '<Xml: "Node: %s">' % str(self.node)
+        return '<Xml: "Node: %s">' % str(self._node)
 
     def __unicode__(self):
-        return u'<?xml version="1.0" encoding="%s"?>\n%s' % (ENCODING, self.node.render())
+        return u'<?xml version="1.0" encoding="%s"?>\n%s' % (ENCODING, self._node.render())
     
     def render(self, writer=None):
         if writer is None:
@@ -79,32 +79,66 @@ class Node(object):
     """
 
     def __init__(self, name, contents=None, attributes=dict(), cdata=False):
-        self.name = name
-        self.contents = contents
-        self.attributes = attributes
-        self.cdata = cdata
-        self.nodes = []
+        self._name = name
+        self._contents = contents
+        self._attributes = attributes
+        self._cdata = cdata
+        self._nodes = []
 
     def __repr__(self):
-        return '<Node: "%s">' % self.name
+        return '<Node: "%s">' % self._name
 
     def __str__(self):
-        return self.name
+        return self._name
 
     def __unicode__(self):
-        attributes = u''.join([' %s="%s"' % (key, self.escape(value)) for key, value in self.attributes.items()])
+        attributes = u''.join([' %s="%s"' % (key, self.escape(value)) for key, value in self._attributes.items()])
         contents = None
-        if self.contents:
-            contents = self.escape(self.contents, self.cdata)
-        elif self.nodes:
-            contents = u''.join([unicode(node) for node in self.nodes])
-        if contents:
-            return u'<%s%s>%s</%s>' % (self.name, attributes, contents, self.name)
-        return u'<%s%s />' % (self.name, attributes)
+        if self._contents is not None:
+            contents = self.escape(self._contents, self._cdata)
+        elif self._nodes:
+            contents = u''.join([unicode(node) for node in self._nodes])
+        if contents is not None:
+            return u'<%s%s>%s</%s>' % (self._name, attributes, contents, self._name)
+        return u'<%s%s />' % (self._name, attributes)
+
+    def __len__(self):
+        return len(self._nodes)
+
+    def __getitem__(self, key):
+        return self._attributes.get(key)
+
+    def __setitem__(self, key, value):
+        self._attributes[key] = value
+
+    def __delitem__(self, key):
+        del self._attributes[key]
+
+    @property
+    def nodes(self):
+        return self._nodes
+
+    @property
+    def contents(self):
+        return self._contents
+
+    @property
+    def has_contents(self):
+        return self._contents is None
+
+    @property
+    def has_nodes(self):
+        if self._nodes:
+            return True
+        return False
+
+    @property
+    def is_cdata(self):
+        return self._cdata
 
     def append(self, node):
         assert isinstance(node, Node), '"node" is not a Node instance'
-        self.nodes.append(node)
+        self._nodes.append(node)
 
     def render(self):
         return unicode(self)

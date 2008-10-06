@@ -92,10 +92,10 @@ class Node(object):
         return self._name
 
     def __unicode__(self):
-        attributes = u''.join([' %s="%s"' % (key, self.escape(value)) for key, value in self._attributes.items()])
+        attributes = u''.join([' %s="%s"' % (key, Node.escape(value)) for key, value in self._attributes.items()])
         contents = None
         if self._contents is not None:
-            contents = self.escape(self._contents, self._cdata)
+            contents = Node.escape(self._contents, self._cdata)
         elif self._nodes:
             contents = u''.join([unicode(node) for node in self._nodes])
         if contents is not None:
@@ -128,22 +128,14 @@ class Node(object):
 
     @property
     def has_nodes(self):
-        if self._nodes:
-            return True
-        return False
+        return bool(self._nodes)
 
     @property
     def is_cdata(self):
         return self._cdata
 
-    def append(self, node):
-        assert isinstance(node, Node), '"node" is not a Node instance'
-        self._nodes.append(node)
-
-    def render(self):
-        return unicode(self)
-
-    def escape(self, value, cdata=False):
+    @staticmethod
+    def escape(value, cdata=False):
         if isinstance(value, NoneType):
             return u''
         if isinstance(value, (bool, int, long, datetime, date, time, float, Decimal)):
@@ -156,3 +148,10 @@ class Node(object):
             if not isinstance(value, unicode):
                 value = unicode(value, ENCODING)
         return value
+
+    def append(self, node):
+        assert isinstance(node, Node), '"node" is not a Node instance'
+        self._nodes.append(node)
+
+    def render(self):
+        return unicode(self)

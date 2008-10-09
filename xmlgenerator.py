@@ -46,12 +46,12 @@ from decimal import Decimal
 from datetime import datetime, date, time
 import codecs
 
-ENCODING = 'utf-8'
-
 class Xml(object):
     """
     XML Generator class
     """
+
+    encoding = 'utf-8'
 
     def __init__(self, node):
         self._node = node
@@ -60,15 +60,19 @@ class Xml(object):
         return '<Xml: "Node: %s">' % str(self._node)
 
     def __unicode__(self):
-        return u'<?xml version="1.0" encoding="%s"?>\n%s' % (ENCODING, self._node.render())
-    
+        return u'<?xml version="1.0" encoding="%s"?>\n%s' % (Xml.encoding, self._node.render())
+
+    @staticmethod
+    def set_encoding(encoding):
+        Xml.encoding = encoding
+
     def render(self, writer=None):
         if writer is None:
             return unicode(self)
         writer.write(unicode(self))
 
     def write(self, filename):
-        writer = codecs.open(filename, 'w', ENCODING)
+        writer = codecs.open(filename, 'w', Xml.encoding)
         self.render(writer)
         writer.close()
 
@@ -146,12 +150,15 @@ class Node(object):
             value = escape(value)
         if isinstance(value, basestring):
             if not isinstance(value, unicode):
-                value = unicode(value, ENCODING)
+                value = unicode(value, Xml.encoding)
         return value
 
     def append(self, node):
         assert isinstance(node, Node), '"node" is not a Node instance'
         self._nodes.append(node)
+
+    def append_as_node(self, *args, **kargs):
+        self._nodes.append(Node(*args, **kargs))
 
     def render(self):
         return unicode(self)

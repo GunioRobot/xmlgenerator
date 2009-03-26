@@ -1,44 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""
-A simple unicode XML Generator
-
-Usage:
-
->>> from xmlgenerator import Xml, Node
-
->>> # Node creation
->>> root = Node('root')
->>> records = Node('blog', 'http://mariz.org', dict(author='Nuno Mariz', title='Nuno Mariz Weblog'))
-
->>> # Append node
->>> root.append(records)
->>> root
-<Node: "root">
-    
->>> root.render()
-u'<root><blog author="Nuno Mariz" title="Nuno Mariz Weblog">http://mariz.org</blog></root>'
-
->>> xml = Xml(root)
->>> xml.render()
-u'<?xml version="1.0" encoding="utf-8"?>\n
-<root><blog author="Nuno Mariz" title="Nuno Mariz Weblog">http://mariz.org</blog></root>'
-
->>> import cStringIO
->>> output = cStringIO.StringIO()
->>> xml = Xml(root)
->>> xml.render(output)
->>> print output.getvalue()
-<?xml version="1.0" encoding="utf-8"?>
-<root><blog author="Nuno Mariz" title="Nuno Mariz Weblog">http://mariz.org</blog></root>
-
->>> output.close()
-
->>> # Writing contents to a file
->>> xml = Xml(root)
->>> xml.write('blogs.xml')
-"""
+__author__ = 'Nuno Mariz'
+__author_email__ = 'nmariz@gmail.com'
+__url__ = 'http://mariz.org'
+__license__ = 'BSD'
     
 from xml.sax.saxutils import escape
 from types import NoneType
@@ -47,8 +13,18 @@ from datetime import datetime, date, time
 import codecs
 
 class Xml(object):
-    """
-    XML Generator class
+    """ 
+    XML generator class
+
+    Usage:
+    >>> xml = Xml(root) # root is a root <Node> object 
+    >>> xml.render()
+
+    Writing contents to a file or a writer:
+    >>> import cStringIO
+    >>> output = cStringIO.StringIO()
+    >>> xml = Xml(root) # root is a root <Node> object 
+    >>> xml.render(output)
     """
 
     encoding = 'utf-8'
@@ -79,7 +55,17 @@ class Xml(object):
 
 class Node(object):
     """
-    Node Element
+    Node element class
+
+    Usage:
+    Node creation:
+    >>> root = Node('root')
+    >>> records = Node('blog', 'http://mariz.org', dict(author='Nuno Mariz', title='Nuno Mariz Weblog'))
+    
+    Append a child node:
+    >>> root.append(records)
+    or inline:
+    >>> root.append_as_node('blog', 'http://mariz.org', dict(author='Nuno Mariz', title='Nuno Mariz Weblog'))
     """
 
     def __init__(self, name, contents=None, attributes=dict(), cdata=False):

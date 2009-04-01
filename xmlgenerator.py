@@ -68,10 +68,10 @@ class Node(object):
     >>> root.append_as_node('blog', 'http://mariz.org', dict(author='Nuno Mariz', title='Nuno Mariz Weblog'))
     """
 
-    def __init__(self, name, contents=None, attributes=dict(), cdata=False):
+    def __init__(self, name, contents=None, attributes=None, cdata=False):
         self._name = name
         self._contents = contents
-        self._attributes = attributes
+        self._attributes = attributes or dict()
         self._cdata = cdata
         self._nodes = []
 

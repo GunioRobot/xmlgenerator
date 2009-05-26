@@ -2,10 +2,9 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Nuno Mariz'
-__author_email__ = 'nmariz@gmail.com'
 __url__ = 'http://mariz.org'
 __license__ = 'BSD'
-    
+
 from xml.sax.saxutils import escape
 from types import NoneType
 from decimal import Decimal
@@ -13,17 +12,17 @@ from datetime import datetime, date, time
 import codecs
 
 class Xml(object):
-    """ 
+    """
     XML generator class
 
     Usage:
-    >>> xml = Xml(root) # root is a root <Node> object 
+    >>> xml = Xml(root) # root is a root <Node> object
     >>> xml.render()
 
     Writing contents to a file or a writer:
     >>> import cStringIO
     >>> output = cStringIO.StringIO()
-    >>> xml = Xml(root) # root is a root <Node> object 
+    >>> xml = Xml(root) # root is a root <Node> object
     >>> xml.render(output)
     """
 
@@ -61,7 +60,7 @@ class Node(object):
     Node creation:
     >>> root = Node('root')
     >>> records = Node('blog', 'http://mariz.org', dict(author='Nuno Mariz', title='Nuno Mariz Weblog'))
-    
+
     Append a child node:
     >>> root.append(records)
     or inline:

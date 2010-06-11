@@ -16,26 +16,26 @@ class Xml(object):
     XML generator class
 
     Usage:
-    >>> xml = Xml(root) # root is a root <Node> object
+    >>> xml = Xml(root) # root is a root <Element> object
     >>> xml.render()
 
     Writing contents to a file or a writer:
     >>> import cStringIO
     >>> output = cStringIO.StringIO()
-    >>> xml = Xml(root) # root is a root <Node> object
+    >>> xml = Xml(root) # root is a root <Element> object
     >>> xml.render(output)
     """
 
     encoding = 'utf-8'
 
-    def __init__(self, node):
-        self._node = node
+    def __init__(self, element):
+        self._element = element
 
     def __repr__(self):
-        return '<Xml: "Node: %s">' % str(self._node)
+        return '<Xml: "Element: %s">' % str(self._element)
 
     def __unicode__(self):
-        return u'<?xml version="1.0" encoding="%s"?>\n%s' % (Xml.encoding, self._node.render())
+        return u'<?xml version="1.0" encoding="%s"?>\n%s' % (Xml.encoding, self._element.render())
 
     @staticmethod
     def set_encoding(encoding):
@@ -52,19 +52,19 @@ class Xml(object):
         writer.close()
 
 
-class Node(object):
+class Element(object):
     """
-    Node element class
+    Element element class
 
     Usage:
-    Node creation:
-    >>> root = Node('root')
-    >>> records = Node('blog', 'http://mariz.org', dict(author='Nuno Mariz', title='Nuno Mariz Weblog'))
+    Element creation:
+    >>> root = Element('root')
+    >>> records = Element('blog', 'http://mariz.org', dict(author='Nuno Mariz', title='Nuno Mariz Weblog'))
 
-    Append a child node:
+    Append a child element:
     >>> root.append(records)
     or inline:
-    >>> root.append_as_node('blog', 'http://mariz.org', dict(author='Nuno Mariz', title='Nuno Mariz Weblog'))
+    >>> root.append_as_element('blog', 'http://mariz.org', dict(author='Nuno Mariz', title='Nuno Mariz Weblog'))
     """
 
     def __init__(self, name, contents=None, attributes=None, cdata=False):
@@ -72,27 +72,27 @@ class Node(object):
         self._contents = contents
         self._attributes = attributes or dict()
         self._cdata = cdata
-        self._nodes = []
+        self._elements = []
 
     def __repr__(self):
-        return '<Node: "%s">' % self._name
+        return '<Element: "%s">' % self._name
 
     def __str__(self):
         return self._name
 
     def __unicode__(self):
-        attributes = u''.join([' %s="%s"' % (key, Node.escape(value)) for key, value in self._attributes.items()])
+        attributes = u''.join([' %s="%s"' % (key, Element.escape(value)) for key, value in self._attributes.items()])
         contents = None
         if self._contents is not None:
-            contents = Node.escape(self._contents, self._cdata)
-        elif self._nodes:
-            contents = u''.join([unicode(node) for node in self._nodes])
+            contents = Element.escape(self._contents, self._cdata)
+        elif self._elements:
+            contents = u''.join([unicode(element) for element in self._elements])
         if contents is not None:
             return u'<%s%s>%s</%s>' % (self._name, attributes, contents, self._name)
         return u'<%s%s />' % (self._name, attributes)
 
     def __len__(self):
-        return len(self._nodes)
+        return len(self._elements)
 
     def __getitem__(self, key):
         return self._attributes.get(key)
@@ -104,8 +104,8 @@ class Node(object):
         del self._attributes[key]
 
     @property
-    def nodes(self):
-        return self._nodes
+    def elements(self):
+        return self._elements
 
     @property
     def contents(self):
@@ -116,8 +116,8 @@ class Node(object):
         return self._contents is None
 
     @property
-    def has_nodes(self):
-        return bool(self._nodes)
+    def has_elements(self):
+        return bool(self._elements)
 
     @property
     def is_cdata(self):
@@ -138,12 +138,30 @@ class Node(object):
                 value = unicode(value, Xml.encoding)
         return value
 
-    def append(self, node):
-        assert isinstance(node, Node), '"node" is not a Node instance'
-        self._nodes.append(node)
+    def append(self, element):
+        assert isinstance(element, Element), '"element" is not a Element instance'
+        self._elements.append(element)
 
-    def append_as_node(self, *args, **kargs):
-        self._nodes.append(Node(*args, **kargs))
+    def append_as_element(self, *args, **kargs):
+        self._elements.append(Element(*args, **kargs))
 
     def render(self):
         return unicode(self)
+
+
+class Node(Element):
+    """
+    Element class clone for back compatibility
+    """
+
+    @property
+    def nodes(self):
+        return self._elements
+
+    @property
+    def has_nodes(self):
+        return bool(self._elements)
+
+    def append_as_node(self, *args, **kargs):
+        self._elements.append(Node(*args, **kargs))
+

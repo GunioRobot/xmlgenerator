@@ -7,21 +7,21 @@ xmlgenerator.py is a simple unicode XML Generator made in python.
 Usage:
 ------
 
->>> from xmlgenerator import Xml, Node
+>>> from xmlgenerator import Xml, Element
 
 
-Node creation
+Element creation
 
->>> root = Node('root')
->>> records = Node('blog', 'http://mariz.org', dict(author='Nuno Mariz', title='Nuno Mariz Weblog'))
+>>> root = Element('root')
+>>> records = Element('blog', 'http://mariz.org', dict(author='Nuno Mariz', title='Nuno Mariz Weblog'))
 
 
-Append a child node
+Append a child element
 
 >>> root.append(records)
 >>> root
-<Node: "root">
-    
+<Element: "root">
+
 >>> root.render()
 u'<root><blog author="Nuno Mariz" title="Nuno Mariz Weblog">http://mariz.org</blog></root>'
 
